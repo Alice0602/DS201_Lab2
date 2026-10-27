@@ -1,7 +1,10 @@
 import os
 import zipfile
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageFile
+
+# Cho phep Pillow doc anh bi cat ngan/thieu byte (tranh OSError truncated)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 import torch
 from torch.utils.data import DataLoader, Subset
@@ -12,8 +15,12 @@ STD  = [0.229, 0.224, 0.225]
 
 
 def safe_pil_loader(path):
-    with open(path, "rb") as f:
-        img = Image.open(f)
+    try:
+        with open(path, "rb") as f:
+            img = Image.open(f)
+            return img.convert("RGBA").convert("RGB")
+    except OSError:
+        img = Image.open(path)
         return img.convert("RGBA").convert("RGB")
 
 
@@ -79,17 +86,48 @@ def build_test_loader(data_root, img_size, batch_size, num_workers=2):
 
 def download_vinafood21(target_dir="VinaFood21"):
     target_path = Path(target_dir)
-    if (target_path / "train").is_dir():
-        return
 
-    import gdown
-    zip_name = "VinaFood21.zip"
-    if not os.path.exists(zip_name):
+    # Neu o Colab va da co san /content/VinaFood21 voi 21 lop
+    colab_parent = Path("/content/VinaFood21")
+    if colab_parent.resolve() != target_path.resolve() and (colab_parent / "train").is_dir():
+        classes_found = [d for d in (colab_parent / "train").iterdir() if d.is_dir()]
+        if len(classes_found) == 21:
+            if not target_path.exists():
+                try:
+                    os.symlink(str(colab_parent), str(target_path))
+                    print(f"Lien ket du lieu tu {colab_parent} (21 lop)")
+                    return
+                except Exception:
+                    pass
+
+    # Kiem tra thu muc hien tai da co du 21 lop chua
+    if (target_path / "train").is_dir():
+        classes_found = [d for d in (target_path / "train").iterdir() if d.is_dir()]
+        if len(classes_found) == 21:
+            return
+        else:
+            print(f"Phat hien thu muc {target_path} chi co {len(classes_found)}/21 lop, giai nen lai...")
+            import shutil
+            shutil.rmtree(target_path, ignore_errors=True)
+
+    # Tim file zip
+    zip_candidates = [Path("VinaFood21.zip"), Path("/content/VinaFood21.zip")]
+    zip_path = None
+    for zc in zip_candidates:
+        if zc.is_file() and zc.stat().st_size > 100_000_000:
+            zip_path = zc
+            break
+
+    if zip_path is None:
+        import gdown
         url = "https://drive.google.com/uc?id=1UpZOf0XlwvB4rKpyZ35iwTA8oWHqDBbR"
         print("Downloading VinaFood21...")
-        gdown.download(url, zip_name, quiet=False)
+        zip_path = Path("VinaFood21.zip")
+        gdown.download(url, str(zip_path), quiet=False)
 
-    print("Extracting dataset...")
-    with zipfile.ZipFile(zip_name, "r") as z:
-        z.extractall(".")
+    print(f"Extracting {zip_path}...")
+    res = os.system(f"unzip -q -o {zip_path} -d .")
+    if res != 0:
+        with zipfile.ZipFile(zip_path, "r") as z:
+            z.extractall(".")
     print("Done!")

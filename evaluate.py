@@ -2,6 +2,9 @@ import argparse
 import json
 from pathlib import Path
 
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 import torch
 import torch.nn as nn
 from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support

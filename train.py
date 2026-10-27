@@ -3,6 +3,9 @@ import csv
 import time
 from pathlib import Path
 
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 import torch
 import torch.nn as nn
 
@@ -85,6 +88,7 @@ def main():
         args.data_root, args.img_size, args.batch_size,
         augment=augment, num_workers=args.num_workers, seed=args.seed
     )
+    assert len(classes) == 21, f"Tap du lieu chi tim thay {len(classes)}/21 lop! Kiem tra thu muc {args.data_root}"
 
     model = build_model(args.model, num_classes=len(classes), img_size=args.img_size).to(device)
     total_p = n_params(model)
