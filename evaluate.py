@@ -5,6 +5,7 @@ from pathlib import Path
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support
@@ -72,6 +73,8 @@ def main():
     cm = confusion_matrix(y_true, y_pred)
     cm_path = ckpt_path.parent / "confusion_matrix.png"
     save_confusion_matrix(cm, classes, cm_path, title=f"Confusion Matrix - {model_name}")
+    np.save(ckpt_path.parent / "cm.npy", cm)
+    np.save(ckpt_path.parent / "classes.npy", np.array(classes))
 
     metrics = {
         "model": model_name,
