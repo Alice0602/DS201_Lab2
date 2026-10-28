@@ -196,11 +196,20 @@ def main():
 
     if summary_rows:
         df_summary = pd.DataFrame(summary_rows)
-        out_csv = Path("outputs/summary_table.csv")
-        out_md  = Path("outputs/summary_table.md")
+        out_dir = Path("outputs")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_csv = out_dir / "summary_table.csv"
+        out_md  = out_dir / "summary_table.md"
         df_summary.to_csv(out_csv, index=False, encoding="utf-8")
-        with open(out_md, "w", encoding="utf-8") as f:
-            f.write(df_summary.to_markdown(index=False))
+        try:
+            with open(out_md, "w", encoding="utf-8") as f:
+                f.write(df_summary.to_markdown(index=False))
+        except Exception:
+            with open(out_md, "w", encoding="utf-8") as f:
+                f.write("| " + " | ".join(df_summary.columns) + " |\n")
+                f.write("| " + " | ".join([":---:"] * len(df_summary.columns)) + " |\n")
+                for _, row in df_summary.iterrows():
+                    f.write("| " + " | ".join(str(v) for v in row.values) + " |\n")
 
         print("\n--- Bang tong hop ket qua ---")
         print(df_summary.to_string(index=False))
