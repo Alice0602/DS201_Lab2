@@ -1,0 +1,9 @@
+{
+  "model": "lenet_avg",
+  "img_size": 64,
+  "test_loss": 2.317989402029979,
+  "accuracy": 0.3006584854833882,
+  "precision_macro": 0.2950235840403452,
+  "recall_macro": 0.29077885761328365,
+  "f1_macro": 0.2826866348760096
+}

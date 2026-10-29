@@ -1,0 +1,9 @@
+{
+  "model": "googlenet",
+  "img_size": 64,
+  "test_loss": 1.8964954018057623,
+  "accuracy": 0.4313079916192757,
+  "precision_macro": 0.4545290219517575,
+  "recall_macro": 0.4014199053081518,
+  "f1_macro": 0.4061759246334553
+}

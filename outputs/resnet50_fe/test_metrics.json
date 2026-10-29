@@ -1,0 +1,9 @@
+{
+  "model": "resnet50_fe",
+  "img_size": 224,
+  "test_loss": 1.3103928610579905,
+  "accuracy": 0.6135887458844658,
+  "precision_macro": 0.6444481762625673,
+  "recall_macro": 0.6168080785079793,
+  "f1_macro": 0.6152726082314993
+}

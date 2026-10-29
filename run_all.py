@@ -189,85 +189,6 @@ def plot_all_loss_curves(out_path="outputs/loss_all_models.png"):
     plt.close()
 
 
-def plot_confusion_matrices_row(models=None, out_path="outputs/confusion_matrices_row.png"):
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    if models is None:
-        models = [
-            ("lenet_avg", "LeNet-5 (Bài 1)"),
-            ("googlenet", "GoogLeNet (Bài 2)"),
-            ("resnet18_aug", "ResNet-18 (Bài 3*)"),
-            ("resnet50_ft", "ResNet-50 FT (Bài 4*)"),
-        ]
-
-    available = []
-    for m_id, title in models:
-        cm_f = Path(f"outputs/{m_id}/cm.npy")
-        img_f = Path(f"outputs/{m_id}/confusion_matrix.png")
-        if cm_f.is_file() or img_f.is_file():
-            available.append((m_id, title, cm_f, img_f))
-
-    if not available:
-        return
-
-    has_all_npy = all(cm_f.is_file() for _, _, cm_f, _ in available)
-    n = len(available)
-
-    if has_all_npy:
-        import seaborn as sns
-        classes = None
-        for m_id, _, _, _ in available:
-            cls_f = Path(f"outputs/{m_id}/classes.npy")
-            if cls_f.is_file():
-                classes = list(np.load(cls_f))
-                break
-
-        fig, axes = plt.subplots(1, n, figsize=(5.5 * n, 5))
-        if n == 1:
-            axes = [axes]
-
-        for i, (m_id, title, cm_f, _) in enumerate(available):
-            cm = np.load(cm_f)
-            xt = classes if classes is not None else False
-            yt = classes if (classes is not None and i == 0) else False
-            sns.heatmap(
-                cm, annot=False, cmap="Blues",
-                cbar=(i == n - 1),
-                ax=axes[i],
-                xticklabels=xt,
-                yticklabels=yt
-            )
-            axes[i].set_title(title, fontsize=11, fontweight="bold")
-            if classes is not None:
-                axes[i].tick_params(axis="x", labelsize=6.5, rotation=90)
-                if i == 0:
-                    axes[i].tick_params(axis="y", labelsize=6.5, rotation=0)
-                    axes[i].set_ylabel("True label", fontsize=10)
-                else:
-                    axes[i].set_ylabel("")
-            axes[i].set_xlabel("Predicted label", fontsize=10)
-
-        plt.subplots_adjust(wspace=0.12)
-        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(out_path, dpi=150, bbox_inches="tight")
-        plt.close()
-    else:
-        fig, axes = plt.subplots(1, n, figsize=(5 * n, 5))
-        if n == 1:
-            axes = [axes]
-        for i, (_, _, _, img_f) in enumerate(available):
-            if img_f.is_file():
-                axes[i].imshow(plt.imread(img_f))
-            axes[i].axis("off")
-        plt.subplots_adjust(wspace=0.03)
-        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(out_path, dpi=150, bbox_inches="tight")
-        plt.close()
-
-
 def plot_all_confusion_matrices(out_path="outputs/confusion_matrices_all.png"):
     import matplotlib
     matplotlib.use("Agg")
@@ -423,7 +344,6 @@ def main():
 
     plot_resnet18_comparison()
     plot_all_loss_curves()
-    plot_confusion_matrices_row()
     plot_all_confusion_matrices()
 
     if summary_rows:
